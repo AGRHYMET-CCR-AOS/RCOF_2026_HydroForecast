@@ -49,7 +49,7 @@ training_list_clean <- tryCatch({
 
 #savePath <- file.path(PATH_OUTPUT, paste0(PREDICTOR_VARS,"_training_list_", if(is.null(COUNTRY_CODE)) "ALL" else COUNTRY_CODE, "_obs.rds"))
 if(is.null(COUNTRY_CODE)) savePath <- file.path(PATH_OUTPUT, paste0(PREDICTOR_VARS,"_WAS_PRESASS2026.rds"))
-if(!is.null(COUNTRY_CODE)) savePath <- file.path(PATH_OUTPUT, paste0(PREDICTOR_VARS,"_",COUNTRY_CODE,"_WAS_SOUTHERN_SUBBASSINS_DATA_MAMJ_2026.rds"))
+if(!is.null(COUNTRY_CODE)) savePath <- file.path(PATH_OUTPUT, paste0(PREDICTOR_VARS,"_",COUNTRY_CODE,"_WAS_PRESASS2026.rds"))
 
 saveRDS(training_list_clean, file =savePath )
 message("Saved: ",savePath)

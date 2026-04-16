@@ -965,5 +965,229 @@ plot_pred_obs_class_maps <- function(
   list(data = x_long, plot = p)
 }
 
+
+
+#Fonction 1 : préparation des données
+
+prepare_fused_long <- function(fused_all) {
+  # Required fixed columns
+  required_cols <- c("HYBAS_ID", "YYYY", "Q", "pred_final")
+  
+  missing_cols <- setdiff(required_cols, names(fused_all))
+  if (length(missing_cols) > 0) {
+    stop("Missing required columns: ", paste(missing_cols, collapse = ", "))
+  }
+  
+  # Detect intermediate forecast columns automatically
+  intermediate_cols <- setdiff(
+    names(fused_all),
+    c("HYBAS_ID", "YYYY", "Q", "pred_final")
+  )
+  
+  # Build long-format data for plotting
+  df_long <- fused_all %>%
+    dplyr::mutate(
+      HYBAS_ID = as.character(HYBAS_ID),
+      YYYY = as.integer(YYYY)
+    ) %>%
+    tidyr::pivot_longer(
+      cols = c("Q", "pred_final", dplyr::all_of(intermediate_cols)),
+      names_to = "series",
+      values_to = "value"
+    ) %>%
+    dplyr::mutate(
+      series = factor(
+        series,
+        levels = c("Q", "pred_final", intermediate_cols),
+        labels = c("Observed", "Final fusion", intermediate_cols)
+      )
+    )
+  
+  return(df_long)
+}
+
+#Fonction 2 : courbes facettées par sous-bassin
+plot_fused_timeseries_facets <- function(
+    fused_all,
+    basin_ids = NULL,
+    max_basins = 12,
+    ncol = 3,
+    free_y = TRUE
+) {
+  # Prepare long data
+  df_long <- prepare_fused_long(fused_all)
+  
+  # Select basins
+  all_basins <- unique(df_long$HYBAS_ID)
+  
+  if (is.null(basin_ids)) {
+    basin_ids <- all_basins[seq_len(min(max_basins, length(all_basins)))]
+  }
+  
+  basin_ids <- intersect(as.character(basin_ids), all_basins)
+  
+  if (length(basin_ids) == 0) {
+    stop("No valid basin IDs selected.")
+  }
+  
+  df_plot <- df_long %>%
+    dplyr::filter(HYBAS_ID %in% basin_ids)
+  
+  # ==============================
+  # COLOR MANAGEMENT
+  # ==============================
+  
+  series_levels <- levels(df_plot$series)
+  
+  # Générer une palette automatique
+  other_series <- setdiff(series_levels, "Observed")
+  
+  palette <- setNames(
+    RColorBrewer::brewer.pal(max(3, length(other_series)), "Set1")[seq_along(other_series)],
+    other_series
+  )
+  
+  # Forcer "Observed" en noir
+  palette <- c("Observed" = "black", palette)
+  
+  # ==============================
+  # PLOT
+  # ==============================
+  
+  p <- ggplot2::ggplot(
+    df_plot,
+    ggplot2::aes(x = YYYY, y = value, color = series, group = series)
+  ) +
+    ggplot2::geom_line(
+      linewidth = 0.7,
+      alpha = 0.95
+    ) +
+    ggplot2::facet_wrap(
+      ~ HYBAS_ID,
+      ncol = ncol,
+      scales = if (free_y) "free_y" else "fixed"
+    ) +
+    ggplot2::scale_color_manual(values = palette) +
+    ggplot2::labs(
+      title = "",
+      x = "Year",
+      y = "Discharge",
+      color = "Series"
+    ) +
+    ggplot2::theme_minimal(base_size = 11) +
+    ggplot2::theme(
+      strip.text = ggplot2::element_text(face = "bold"),
+      legend.position = "bottom",
+      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1)
+    )
+  
+  return(p)
+}
+
+#Fonction 3 : génération automatique en plusieurs pages
+
+plot_fused_timeseries_pages <- function(
+    fused_all,
+    basins_per_page = 12,
+    ncol = 3,
+    free_y = TRUE
+) {
+  df_long <- prepare_fused_long(fused_all)
+  all_basins <- unique(df_long$HYBAS_ID)
+  
+  basin_groups <- split(
+    all_basins,
+    ceiling(seq_along(all_basins) / basins_per_page)
+  )
+  
+  plots <- purrr::imap(basin_groups, function(basin_set, i) {
+    p <- plot_fused_timeseries_facets(
+      fused_all = fused_all,
+      basin_ids = basin_set,
+      max_basins = basins_per_page,
+      ncol = ncol,
+      free_y = free_y
+    ) +
+      ggplot2::labs(
+        title = paste0(
+          "Observed vs forecasts by basin (page ", i, "/", length(basin_groups), ")"
+        )
+      )
+    
+    return(p)
+  })
+  
+  return(plots)
+}
+
+#Fonction 4 : boxplots globaux
+plot_fused_boxplot <- function(fused_all, exclude_observed = FALSE) {
+  df_long <- prepare_fused_long(fused_all)
+  
+  if (exclude_observed) {
+    df_long <- df_long %>%
+      dplyr::filter(series != "Observed")
+  }
+  
+  p <- ggplot2::ggplot(
+    df_long,
+    ggplot2::aes(x = series, y = value, fill = series)
+  ) +
+    ggplot2::geom_boxplot(outlier.alpha = 0.25) +
+    ggplot2::labs(
+      title = "Distribution of observed and forecasted values",
+      x = NULL,
+      y = "Discharge"
+    ) +
+    ggplot2::theme_bw(base_size = 11) +
+    ggplot2::theme(
+      legend.position = "none",
+      axis.text.x = ggplot2::element_text(angle = 30, hjust = 1)
+    )
+  
+  return(p)
+}
+
+#Fonction 5 : boxplots d’erreurs
+plot_fused_error_boxplot <- function(fused_all) {
+  required_cols <- c("HYBAS_ID", "YYYY", "Q", "pred_final")
+  
+  missing_cols <- setdiff(required_cols, names(fused_all))
+  if (length(missing_cols) > 0) {
+    stop("Missing required columns: ", paste(missing_cols, collapse = ", "))
+  }
+  
+  pred_cols <- setdiff(names(fused_all), c("HYBAS_ID", "YYYY", "Q"))
+  
+  df_err <- fused_all %>%
+    dplyr::mutate(HYBAS_ID = as.character(HYBAS_ID)) %>%
+    tidyr::pivot_longer(
+      cols = dplyr::all_of(pred_cols),
+      names_to = "model",
+      values_to = "prediction"
+    ) %>%
+    dplyr::mutate(error = prediction - Q)
+  
+  p <- ggplot2::ggplot(
+    df_err,
+    ggplot2::aes(x = model, y = error, fill = model)
+  ) +
+    ggplot2::geom_boxplot(outlier.alpha = 0.25) +
+    ggplot2::geom_hline(yintercept = 0, linetype = 2) +
+    ggplot2::labs(
+      title = "Distribution of forecast errors by model",
+      x = NULL,
+      y = "Prediction error"
+    ) +
+    ggplot2::theme_bw(base_size = 11) +
+    ggplot2::theme(
+      legend.position = "none",
+      axis.text.x = ggplot2::element_text(angle = 30, hjust = 1)
+    )
+  
+  return(p)
+}
+
+
 # ---- Example ----
 

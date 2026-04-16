@@ -4,19 +4,39 @@ a_countries <- sf::st_read(PATH_COUNTRIES, quiet = TRUE) %>%
 
 a_subs <- sf::st_read(PATH_SUBBASINS, quiet = TRUE) %>%
   sf::st_make_valid() %>%
-  rename(HYBAS_ID = dplyr::all_of(SUBBASINS_ID_COL)) %>%
-  mutate(HYBAS_ID = as.factor(HYBAS_ID))
+  dplyr::rename(HYBAS_ID = dplyr::all_of(SUBBASINS_ID_COL)) %>%
+  dplyr::mutate(HYBAS_ID = as.character(HYBAS_ID))
 
 # Ensure same CRS
 if (sf::st_crs(a_countries) != sf::st_crs(a_subs)) {
   a_subs <- sf::st_transform(a_subs, sf::st_crs(a_countries))
 }
 
+# Predefined country list
+countries <- c(
+  "BEN", "GMB", "GHA", "GIN", "CIV", "LBR", "MLI", "MRT",
+  "NER", "NGA", "GNB", "SEN", "SLE", "TGO", "BFA", "TCD", "CPV"
+)
+
 # Filter country
-country <- a_countries
-if(!is.null(COUNTRY_CODE)){
-  stopifnot(nchar(COUNTRY_CODE) == 3)
-  country <- a_countries %>% filter(.data$GMI_CNTRY == COUNTRY_CODE)
+if (!is.null(COUNTRY_CODE) && COUNTRY_CODE %in% countries) {
+  
+  country <- a_countries %>%
+    dplyr::filter(.data$GMI_CNTRY == COUNTRY_CODE) %>%
+    dplyr::summarise(geometry = sf::st_union(geometry), .groups = "drop")
+  
+} else {
+  
+  message(
+    if (is.null(COUNTRY_CODE)) {
+      "COUNTRY_CODE is NULL; entire country shapefile will be used."
+    } else {
+      paste0(COUNTRY_CODE, " code not found in the predefined list; entire shapefile will be used.")
+    }
+  )
+  
+  country <- a_countries %>%
+    dplyr::summarise(geometry = sf::st_union(geometry), .groups = "drop")
 }
 
 
@@ -46,7 +66,7 @@ area_sub   <- sf::st_area(subs_sel)
 area_int   <- sf::st_area(inter_geom)
 cover      <- as.numeric(area_int) / as.numeric(area_sub)
 
-subs_sel$coverage_class <- ifelse(cover >= 0.999, "FULL", "PARTIAL")
+subs_sel$coverage_class <- ifelse(cover >= 0.5, "FULL", "PARTIAL")
 subs_sel$coverage_ratio <- cover
 
 HYBAS_IDS <- as.factor(subs_sel$HYBAS_ID)
@@ -57,7 +77,7 @@ length(HYBAS_IDS)
 # 1) Select the user's country and find covered subbasins
 domain_plot <- ggplot2::ggplot()+
   geom_sf(data=subs_sel)+
-  geom_sf(data = country, fill="orange", alpha=0.2)+
+  geom_sf(data = country, fill=NA, alpha=0.2,color="red")+
   theme_minimal()+
   ggspatial::annotation_north_arrow(
     location = "tr",

@@ -7,24 +7,29 @@
 # 1) USER SETTINGS
 # Participants should edit only this section
 # ==============================================================================
-PRCP_PATH_INPUTS <- "data/predictors/PRCP/PRCP_CIV_WAS_PRESASS2026.rds"
+PRCP_PATH_INPUTS <- "data/predictors/PRCP/PRCP_TGO_WAS_PRESASS2026.rds"
 SST_PATH_INPUTS <- NULL
-COUNTRY_CODE <- "CIV" # "BEN" "GMB" "GHA" "GIN" "CIV" "LBR" "MLI" "MRT" "NER" "NGA" "GNB" "SEN" "SLE" "TGO" "BFA" "TCD" "CPV"
+COUNTRY_CODE <- "TGO" # "BEN" "GMB" "GHA" "GIN" "CIV" "LBR" "MLI" "MRT" "NER" "NGA" "GNB" "SEN" "SLE" "TGO" "BFA" "TCD" "CPV"
 PATH_COUNTRIES   <- "data/statics/was_contries.shp"   # shapefile with GMI_CNTRY field
 PATH_SUBBASINS   <- "data/statics/was_presass_subbassins_lev5_processed.shp"
 PATH_RIVERS <- "data/statics/was_rivers.shp"
 PATH_MASQUE <- NULL # "static/was_southern_subbasins_lev6.shp"
 PATH_WAS <- NULL
 PATH_OUTLETS <- NULL#"static/outlets.shp"
+APPLY_PCA <- TRUE
 PREDICTOR_VARS <-"PRCP"
 APPROACH <- "ML"
 WASS2S_ROOT_PARENT <- NULL
 RUN_IN_PARALLEL <- TRUE
-WORKERS <- 18
-pred_pattern_by_product <- "^(prcp|sst)"
-MODELS <- c("cubist","mars","glmnet")
-FINAL_FUSER <- "xgb"
+WORKERS <- 15
+MODELS <- c("rf","xgb","mlP","kknn","glmnet")
+FINAL_FUSER <- "rf"
 update_github <- TRUE
+auto_pca <- TRUE
+apply_corr <- TRUE
+apply_normalize <-  TRUE
+apply_impute = TRUE 
+impute_nominal = TRUE
 fyears <- c(20210101,20260101)
 fyear <- 20260101
 issue_date <- 20260401

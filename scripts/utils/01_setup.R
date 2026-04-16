@@ -1,3 +1,17 @@
+# ==============================================================================
+# STEP 1: SETUP
+# ==============================================================================
+# This step prepares the working environment:
+# - Loads required packages
+# - Checks input files
+# - Initializes parallel processing
+# - Creates output directories
+#
+# Expected result:
+# Environment is ready to run the forecast workflow
+# ==============================================================================
+
+message("▶ STEP 1: Setup environment — START \n")
 # ------------------------------------------------------------------------------
 # safeload(): Install and load required R packages (CRAN + GitHub)
 #
@@ -35,7 +49,7 @@ safeload <- function(pkgs, update_github = TRUE) {
   # Report missing packages (before any install attempts)
   missing_pkgs <- pkgs[!vapply(pkgs, is_installed, logical(1))]
   if (length(missing_pkgs)) {
-    message("Missing packages detected: ", paste(missing_pkgs, collapse = ", "))
+    message("Missing packages detected: ", paste(missing_pkgs, collapse = ", "),"\n")
   }
   
   # Ensure a stable CRAN mirror (optional but recommended for reproducibility)
@@ -89,7 +103,7 @@ safeload(required_pkgs)
 
 check_forecast_inputs <- function() {
   
-  message("Checking user inputs...")
+  message("Checking user inputs...\n")
   
   # ---------------------------------------------------------------------------
   # 1. INPUT FILES
@@ -195,7 +209,7 @@ if (workers <= 1L) {
   future::plan(future::multisession, workers = workers)
 }
 
-message("Workers used: ", workers)
+message("Workers used: ", workers,"\n")
 # ------------------------------------------------------------------------------
 # 4) Progress handlers
 # ------------------------------------------------------------------------------
@@ -269,7 +283,7 @@ ws <- init_wass2s_workspace(
   run_id = RUN_ID
 )
 
-message("WASS2S workspace: ", ws$run_dir)
+message("WASS2S workspace: ", ws$run_dir,"\n")
 
 ## Import utils
 source("scripts/utils/00_functions.R")
@@ -278,3 +292,5 @@ meta <- tibble(
   predictors = PREDICTOR_VARS,
   final_fuser = FINAL_FUSER
 )
+
+message("✔ STEP 1: Setup environment — COMPLETED SUCCESSFULLY")
