@@ -51,7 +51,9 @@ if (sf::st_crs(a_countries)$epsg != sf::st_crs(a_subs)$epsg) {
 # inter_idx <- sf::st_intersects(a_subs, country, sparse = TRUE)
 # sel <- lengths(inter_idx) > 0
 # subs_sel <- a_subs[sel, ]
-subs_sel <- sf::st_filter(a_subs, country, .predicate = sf::st_intersects)
+subs_sel <- sf::st_filter(a_subs%>%
+                            sf::st_make_valid() , country%>%
+                            sf::st_make_valid() , .predicate = sf::st_intersects)
 
 # Classify as FULL vs PARTIAL coverage (by area ratio of intersection)
 
@@ -62,8 +64,10 @@ if(!is.null(COUNTRY_CODE)){
   inter_geom <- sf::st_intersection(sf::st_make_valid(subs_sel), sf::st_make_valid(subs_sel))
   
 }
-area_sub   <- sf::st_area(subs_sel)
-area_int   <- sf::st_area(inter_geom)
+area_sub   <- sf::st_area(subs_sel%>%
+                            sf::st_make_valid() )
+area_int   <- sf::st_area(inter_geom%>%
+                            sf::st_make_valid() )
 cover      <- as.numeric(area_int) / as.numeric(area_sub)
 
 subs_sel$coverage_class <- ifelse(cover >= 0.5, "FULL", "PARTIAL")

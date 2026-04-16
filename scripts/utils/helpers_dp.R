@@ -50,7 +50,7 @@ safeload <- function(pkgs, update_github = FALSE,force_reinstallation=FALSE) {
   }
 
   # Install or update the GitHub package if requested or missing
-  if (update_github || "WASS2SHydroR" %in% missing_pkgs) {
+  if (update_github) {
 
     tryCatch({
       detach("package:WASS2SHydroR", unload = TRUE)

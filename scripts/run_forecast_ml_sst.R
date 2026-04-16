@@ -8,7 +8,7 @@
 # Participants should edit only this section
 # ==============================================================================
 PRCP_PATH_INPUTS <- NULL
-SST_PATH_INPUTS <- "data/predictors/SST/SST_WAS_PRESASS2026.rds"
+SST_PATH_INPUTS <- "data/predictors_v2/SST/SST_WAS_PRESASS2026.rds"
 COUNTRY_CODE <- NULL # "BEN" "GMB" "GHA" "GIN" "CIV" "LBR" "MLI" "MRT" "NER" "NGA" "GNB" "SEN" "SLE" "TGO" "BFA" "TCD" "CPV"
 PATH_COUNTRIES   <- "data/statics/was_contries.shp"   # shapefile with GMI_CNTRY field
 PATH_SUBBASINS   <- "data/statics/was_presass_subbassins_lev5_processed.shp"

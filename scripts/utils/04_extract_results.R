@@ -26,8 +26,7 @@ tryCatch({
     x <- basin_obj[[basin_id]]
     if (is.null(x)) x <- basin_obj
     
-    lbs <- x$scores %>%
-      dplyr::select(HYBAS_ID,kge,rmse,split)
+    lbs <- x$scores 
     if (is.null(lbs)) return(NULL)
     
     lbs %>%
