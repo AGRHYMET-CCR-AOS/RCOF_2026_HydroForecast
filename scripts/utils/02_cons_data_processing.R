@@ -122,34 +122,6 @@ tryCatch({
     )))
   }
   
-  ## Inputs data processing
-  prcp_data_by_products <- NULL
-  sst_data_by_products <- NULL
-  if(APPROACH%in%c("STAT","ML")){
-    res <- validate_and_load_predictors(PRCP_PATH_INPUTS, SST_PATH_INPUTS)
-    prcp_data_by_products <- res$prcp_data_by_products
-    sst_data_by_products <- res$sst_data_by_products
-    auto_pca <- res$flags$auto_pca
-    apply_corr <- res$flags$apply_corr
-    apply_normalize <- res$flags$apply_normalize
-    apply_impute <- res$flags$apply_impute
-    impute_nominal <- res$flags$impute_nominal
-    
-    if (is.null(prcp_data_by_products) && is.null(sst_data_by_products)) {
-      stop("You must provide at least one input: PRCP_PATH_INPUTS or SST_PATH_INPUTS.", call. = FALSE)
-    }
-    
-    data_by_products <- if (is.null(prcp_data_by_products)){
-      sst_data_by_products
-    }else if(is.null(sst_data_by_products)) {prcp_data_by_products
-    } else{
-      merge_prcp_sst_lists(prcp_data_by_products, sst_data_by_products)
-      PREDICTOR_VARS <-"PRCP-SST"
-    }
-  }
-  seasonal_discharge <- readRDS(Q_PATH_INPUTS)
-  his_quantile <- read.csv(HIS_QUANTILE_PATH_INPUTS)
-  
   
   message("✔ STEP 2: Prepare input data — COMPLETED SUCCESSFULLY")
   

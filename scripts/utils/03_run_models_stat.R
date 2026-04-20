@@ -12,7 +12,7 @@ with_progress({
                                            hybas_id ="HYBAS_ID",
                                            pred_pattern_by_product  = pred_pattern_by_product,
                                            final_fuser = FINAL_FUSER,
-                                           grid_levels = 5,
+                                           grid_levels = 10,
                                            topK = 3,
                                            quiet = FALSE,
                                            verbose_tune = FALSE,

@@ -33,6 +33,7 @@ message("▶ STEP 1: Setup environment — START \n")
 #   - Respects GITHUB_PAT if set (recommended for rate limits).
 #   - Installs dependencies and parallelizes CRAN compilation when possible.
 # ------------------------------------------------------------------------------
+PREDICTOR_VARS <- "Cons"
 options(repos = c(CRAN = "https://cloud.r-project.org"))
 required_pkgs <- c(
   "WASS2SHydroR","sf","tidyr","dplyr","purrr","ggplot2",
@@ -109,13 +110,11 @@ check_forecast_inputs <- function() {
   # 1. INPUT FILES
   # ---------------------------------------------------------------------------
   
-  if (!is.null(SST_PATH_INPUTS) && !file.exists(SST_PATH_INPUTS)) {
-    stop("SST input file not found:\n   ", SST_PATH_INPUTS)
+  if (all(is.null(ML_PRCP_PATH),is.null(ML_SST_PATH),is.null(STAT_PRCP_PATH),is.null(STAT_SST_PATH),is.null(HYDRO_Q_PATH))) {
+    stop("SST input file not found:\n   ", )
   }
   
-  if (!is.null(PRCP_PATH_INPUTS) && !file.exists(PRCP_PATH_INPUTS)) {
-    stop("RCP input file not found:\n   ", PRCP_PATH_INPUTS)
-  }
+
   
   # ---------------------------------------------------------------------------
   # 2. SHAPEFILES

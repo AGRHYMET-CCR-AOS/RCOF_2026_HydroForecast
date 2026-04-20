@@ -57,14 +57,6 @@ tryCatch({
     if (nrow(country) == 0) stop("No country with GMI_CNTRY == ", COUNTRY_CODE)
   }
   
-  # Intersections: subbasins partially or fully covered by the country polygon
-  inter_idx <- sf::st_intersects(a_subs, country, sparse = TRUE)
-  sel <- lengths(inter_idx) > 0
-  subs_sel <- a_subs[sel, ]
-  
-  suppressWarnings(sf_basins <- sf::st_intersection(a_subs, country)%>%
-                     mutate(HYBAS_ID = as.factor(HYBAS_ID)))
-  
   subs_union <- a_subs %>%
     st_make_valid() %>%
     st_union() %>%
@@ -74,6 +66,16 @@ tryCatch({
     st_make_valid() %>%
     st_union() %>%
     st_as_sf()
+  
+  # Intersections: subbasins partially or fully covered by the country polygon
+  inter_idx <- sf::st_intersects(a_subs, country, sparse = TRUE)
+  sel <- lengths(inter_idx) > 0
+  subs_sel <- a_subs[sel, ]
+  
+  suppressWarnings(sf_basins <- sf::st_intersection(a_subs, country_union)%>%
+                     mutate(HYBAS_ID = as.factor(HYBAS_ID)))
+  
+
   
   sf_masque <- if(!is.null(a_masque) && !is.null(country_union)) sf::st_intersection(a_masque,country_union) else NULL
   
@@ -147,8 +149,10 @@ tryCatch({
       PREDICTOR_VARS <-"PRCP-SST"
     }
   }
-  seasonal_discharge <- readRDS(Q_PATH_INPUTS)
-  his_quantile <- read.csv(HIS_QUANTILE_PATH_INPUTS)
+  final_seasonal_flow <- readRDS(Q_PATH_INPUTS)
+  his_quantile <- read.csv(HIS_QUANTILE_PATH_INPUTS) %>% 
+    mutate(q25 = ifelse(q25==q75,NA,q25),
+           q75 = ifelse(q25==q75,NA,q75))
   
   
   message("✔ STEP 2: Prepare input data — COMPLETED SUCCESSFULLY")

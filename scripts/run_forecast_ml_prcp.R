@@ -16,20 +16,15 @@ PATH_RIVERS <- "data/statics/was_rivers.shp"
 PATH_MASQUE <- NULL # "static/was_southern_subbasins_lev6.shp"
 PATH_WAS <- NULL
 PATH_OUTLETS <- NULL#"static/outlets.shp"
-APPLY_PCA <- TRUE
 PREDICTOR_VARS <-"PRCP"
 APPROACH <- "ML"
 WASS2S_ROOT_PARENT <- NULL
 RUN_IN_PARALLEL <- TRUE
-WORKERS <- 15
-MODELS <- c("rf","xgb","mlP","kknn","glmnet")
-FINAL_FUSER <- "rf"
+WORKERS <- 18
+pred_pattern_by_product <- "^(prcp|sst)"
+MODELS <- c("cubist","mars","glmnet")
+FINAL_FUSER <- "xgb"
 update_github <- TRUE
-auto_pca <- TRUE
-apply_corr <- TRUE
-apply_normalize <-  TRUE
-apply_impute = TRUE 
-impute_nominal = TRUE
 fyears <- c(20210101,20260101)
 fyear <- 20260101
 issue_date <- 20260401

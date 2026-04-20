@@ -32,7 +32,7 @@ tryCatch({
                              fusion_method ="meta",
                              sub_grid_levels=3,
                              min_kge_model =-Inf ,
-                             grid_levels = 3,
+                             grid_levels = 5,
                              prediction_years =fyears,
                              verbose_tune = FALSE,quiet =  FALSE,
                              final_fuser = tolower(FINAL_FUSER),

@@ -12,13 +12,15 @@
 # Probabilities for each class per basin
 # ==============================================================================
 message("▶ STEP 5: Compute class probabilities — START")
-
+hybas_ids <- unique(merged$HYBAS_ID)
 tryCatch({
   
   probabilities <- map(hybas_ids,~{
-    preds <- predictions %>%
-      dplyr::filter(HYBAS_ID == .x)
-    q_hist <- predictions %>%
+    preds <- merged %>%
+      dplyr::filter(HYBAS_ID == .x) %>% 
+      rename(pred=Consolidated_frcst)
+    q_hist <- merged%>% 
+      rename(pred=Consolidated_frcst) %>%
       dplyr::filter(HYBAS_ID == .x) %>% 
       dplyr::filter(YYYY>= 19910101 & YYYY<=20200101)
     
